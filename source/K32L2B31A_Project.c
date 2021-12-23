@@ -125,5 +125,289 @@ const char *comandos_at[] = {
 
 
  int main(void) {
-	
+	float light_value;
+	float temperature_value;
+	bool button1;
+	bool button2;
+	int j=0;
+	int i=0;
+	//int k=0;
+	uint8_t nuevo_byte_lpuart0;
+
+
+    /* Init board hardware. */
+    BOARD_InitBootPins();
+    BOARD_InitBootClocks();
+    BOARD_InitBootPeripherals();
+#ifndef BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL
+    /* Init FSL debug console. */
+    BOARD_InitDebugConsole();
+#endif
+
+    /* Activa LPTMR0 para que iniciar contador y posterior IRQ cada 1 segundo*/
+    LPTMR_StartTimer(LPTMR0);
+
+
+    while(1) {
+
+    	//for(int j=0; j<COMANDOS_DISPONIBLES_AT; j++){
+    		switch(j){
+
+    		    case kAT:
+    		    	printf("%s\r\n",comandos_at[kAT]);
+    		    	i=kAT;
+    		    	j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kATI:
+    		        printf("%s\r\n",comandos_at[kATI]);
+    		        i=kATI;
+    		        j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kAT_CPIN:
+    		        printf("%s\r\n",comandos_at[kAT_CPIN]);
+    		        i=kAT_CPIN;
+    		        j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kAT_CSQ:
+					 printf("%s\r\n",comandos_at[kAT_CSQ]);
+					 i=kAT_CSQ;
+					 j= kesperando_respuesta;
+				break;
+
+    		    case kAT_QCSQ:
+    		         printf("%s\r\n",comandos_at[kAT_QCSQ]);
+    		         i=kAT_QCSQ;
+    		         j= kesperando_respuesta;
+    		    break;
+
+    		    case kAT_CREG:
+    		         printf("%s\r\n",comandos_at[kAT_CREG]);
+    		         i=kAT_CREG;
+    		         j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kAT_CGREG:
+    		         printf("%s\r\n",comandos_at[kAT_CGREG]);
+    		         i=kAT_CGREG;
+    		         j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kAT_QIACT1:
+    		         printf("%s\r\n",comandos_at[kAT_QIACT1]);
+    		         i=kAT_QIACT1;
+    		         j= kesperando_respuesta;
+
+    		    break;
+
+    		    case kesperando_respuesta:
+
+    		    	if (uart0CuantosDatosHayEnBuffer() !=0) {
+    		    	    		nuevo_byte_lpuart0 = LeerByteDesdeBuffer();
+                                //printf("nuevo byte:%c\r\n",nuevo_byte_lpuart0);
+    		    	    					//almacena dato en buffer rx
+    		    	    					buffer_rx[index_buffer_rx] = nuevo_byte_lpuart0;
+    		    	    					//incrementa apuntador de datos en buffer
+    		    	    					index_buffer_rx++;
+
+
+    		    	    					char *puntero_ok;
+    		    	    					char *puntero_ok2;
+
+    		    	    					if(nuevo_byte_lpuart0 == '\n'){
+
+    		    	    						if(i<COMANDOS_DISPONIBLES_AT){
+
+    		    	    						puntero_ok = (char*) (strstr((char*) (&buffer_rx[0]),(char*) (repuestas_at[i])));
+
+
+    		    	    						   if(puntero_ok!=0){
+    		    	    						    	switch(i){
+
+
+    		    	    								   case kAT:
+
+
+    		    	    									   printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    									   BorrarBufferRX();
+    		    	    									   j=kATI;
+
+
+    		    	    						    	   break;
+
+    		    	    								   case kATI:
+
+
+    		    	    								        printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								        BorrarBufferRX();
+    		    	    								       j=kAT_CPIN;
+
+    		    	    								   break;
+
+    		    	    								   case kAT_CPIN:
+
+    		    	    								        printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								        BorrarBufferRX();
+    		    	    								       j=kAT_CSQ;
+
+    		    	    								   break;
+
+    		    	    								   case kAT_QCSQ:
+
+    		    	    								         printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								         BorrarBufferRX();
+    		    	    								       j=kAT_CREG;
+
+    		    	    								   break;
+
+    		    	    								   case kAT_CREG:
+
+    		    	    								         printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								         BorrarBufferRX();
+    		    	    								        j=kAT_CGREG;
+
+    		    	    								    break;
+
+    		    	    								   case kAT_CGREG:
+
+    		    	    								         printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								         BorrarBufferRX();
+    		    	    								       j=kAT_QIACT1;
+
+    		    	    								   break;
+
+    		    	    								   case kAT_CSQ:
+
+    		    	    								       	printf("RESPUESTA ENCONTRADA\r\n");
+    		    	    								       	BorrarBufferRX();
+    		    	    								        j=kAT_QCSQ;
+
+
+    		    	    								   break;
+
+    		    	    								   case kAT_QIACT1:
+
+																printf("RESPUESTA ENCONTRADA\r\n");
+																BorrarBufferRX();
+																j=kesperando_respuesta;
+																i=kesperando_respuesta;
+
+														   break;
+
+    		    	    						   }
+    		    	    						}
+
+    		    	    					}
+
+    		    	    						if(i==kesperando_respuesta){
+
+    		    	    						  for(int k=0; k<COMANDOS_DISPONIBLES_LEDS_SENSOR; k++){
+    		    	    						   puntero_ok2 = (char*) (strstr((char*) (&buffer_rx[0]),(char*) (repuestas_LEDS[k])));
+
+    		    	    						   if(puntero_ok2!=0){
+
+    		    	    							  switch(k){
+
+
+    		    	    						       	case kLED_VERDE_ON:
+
+    		    	    						       		GPIO_PinWrite(GPIOD,5,0);
+    		    	    						       		BorrarBufferRX();
+
+    		    	    						        break;
+
+    		    	    						        case kLED_VERDE_OFF:
+
+    		    	    						        	GPIO_PinWrite(GPIOD,5,1);
+    		    	    						        	BorrarBufferRX();
+
+    		    	    						        break;
+
+    		    	    						        case kLED_ROJO_ON:
+
+    		    	    						        	GPIO_PinWrite(GPIOE,31U,0);
+    		    	    						        	BorrarBufferRX();
+
+    		    	    						       	break;
+
+    		    	    						        case kLED_ROJO_OFF:
+
+    		    	    						        	GPIO_PinWrite(GPIOE,31U,1);
+    		    	    						        	BorrarBufferRX();
+
+    		    	    						        break;
+
+    		    	    						       case kSENSOR_LUX:
+
+    		    	    						    	   light_value=getLightADC();
+    		    	    						    	   printf("Luminosidad: %d\r\n", light_value);
+    		    	    						    	   printf("\r\n");
+    		    	    						    	   BorrarBufferRX();
+
+    		    	    						       break;
+
+    		    	    						       case kSENSOR_TEMP:
+
+    		    	    						    	   temperature_value=getTemperatureValue();
+    		    	    						    	   printf("Temperatura: %f\r\n", temperature_value);
+    		    	    						    	   printf("\r\n");
+    		    	    						    	   BorrarBufferRX();
+
+
+    		    	    						       break;
+
+
+
+    		    	    						     }
+    		    	    						    }
+    		    	    						}
+    		    	    					}
+
+
+
+
+    		    	    		}
+    		    	           }
+
+
+    		    break;
+
+    		 }
+
+
+
+
+
+
+
+
+    	if(lptmr0_ticks!=0){
+    		lptmr0_ticks=0;
+    		 button1 = leerBoton1();
+    		 button2 = leerBoton2();
+    		 if (button1!=true){
+
+    			 printf("boton1\r\n");
+    			  printf("\r\n");
+    		 }
+
+    		 if (button2!=true){
+
+    			 printf("boton2\r\n");
+    			  printf("\r\n");
+    		 }
+
+    	}
+
+    //}
+
+    }
+    return 0 ;
 }
